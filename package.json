@@ -1,0 +1,35 @@
+{
+  "name": "@vikan/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the vikan API, signed webhooks and resumable S2 events",
+  "type": "module",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/vikan-dev/vikan-sdk.git" },
+  "homepage": "https://github.com/vikan-dev/vikan-sdk#readme",
+  "bugs": { "url": "https://github.com/vikan-dev/vikan-sdk/issues" },
+  "keywords": ["vikan", "sdk", "api", "typescript", "events"],
+  "engines": { "node": ">=22" },
+  "packageManager": "bun@1.4.2",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./webhooks": { "types": "./dist/webhooks.d.ts", "import": "./dist/webhooks.js" },
+    "./events": { "types": "./dist/events.d.ts", "import": "./dist/events.js" },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md"],
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "check": "bun run typecheck && bun run test && bun run build",
+    "sync:contract": "bun scripts/sync-contract.ts",
+    "check:contract": "bun scripts/sync-contract.ts --check",
+    "prepack": "bun run build"
+  },
+  "dependencies": { "zod": "4.4.3", "@s2-dev/streamstore": "0.27.0" },
+  "devDependencies": { "@types/bun": "^1.4.0", "typescript": "^7.0.2", "json-schema-to-typescript": "^15.0.4" }
+}
