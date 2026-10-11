@@ -5,8 +5,16 @@ ES modules for Node.js 22+ and Bun, with generated types and runtime validation.
 
 ## Install
 
-The first npm release is being prepared. Bun applications can install directly
-from Git; replace `FULL_COMMIT_SHA` with the full revision you reviewed:
+Install from npm with Bun or npm:
+
+```sh
+bun add @vikan/sdk
+# or
+npm install @vikan/sdk
+```
+
+Bun applications can also install directly from Git; replace `FULL_COMMIT_SHA`
+with the full revision you reviewed:
 
 ```sh
 bun add '@vikan/sdk@github:vikan-dev/vikan-sdk#FULL_COMMIT_SHA'
@@ -26,7 +34,6 @@ bun pm pack
 ```
 
 Install the resulting tarball in your application with `bun add /path/to/vikan-sdk-0.1.0.tgz`.
-After the npm release, use `bun add @vikan/sdk`.
 
 ## Paired devices and CLI runners
 

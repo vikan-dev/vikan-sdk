@@ -9,14 +9,17 @@ plan is free; the organization name becomes the package scope.
    if you do not already own that scope. Choose **Unlimited public packages**.
    If the name is unavailable, resolve the intended scope before changing package names.
 2. Add the maintainer's npm account to that organization with publishing rights.
-3. Authenticate locally with `bunx npm login`; `bun pm whoami` should identify
+3. Authenticate locally with `bunx npm login --registry https://registry.npmjs.org`;
+   `bunx npm whoami --registry https://registry.npmjs.org` should identify
    the account. Complete npm's 2FA/browser authentication yourself. Do not put
    tokens or one-time passwords in source files or commits.
 4. Run `bun run check`, `bun run check:contract ../eztodo`,
    `bun run check:agent ../eztodo`, and
    `bun pm pack --dry-run`. Verify the package contains built JS, declarations,
    README and license notices.
-5. Publish with `bun publish --access public`, then verify the registry version
+5. Publish with `bun publish --access public --registry https://registry.npmjs.org`,
+   explicitly targeting the official registry even if local installs use a mirror.
+   Then verify the registry version
    and update the README installation section. The repository has no automatic
    publish-on-push job.
 
