@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { createVikanClient } from '../dist/index.js'
 import { signWebhook, verifyWebhook, WEBHOOK_HEADERS } from '../dist/webhooks.js'
 import { createEventClient } from '../dist/events.js'
+import { createVikanApiClient, agentDeliverableClaimSchema } from '../dist/agent.js'
 
 const id = '11111111-1111-4111-8111-111111111111'
 const api = createVikanClient({ apiKey: 'test', fetch: async () => Response.json({
@@ -21,4 +22,11 @@ const events = createEventClient(api, { transport: { open: async (_grant, cursor
 }) } }).subscribe({ projectId: id, subscription })
 assert.equal((await events.next()).value.cursor, '8')
 await events.return()
-console.log(`Node ${process.versions.node}: built API client, webhook verification and S2 iterator passed.`)
+const device = createVikanApiClient({ apiOrigin: 'https://example.test', credential: 'device-test', fetch: async (url, init) => {
+  assert.equal(url, 'https://example.test/api/agent/runs')
+  assert.equal(new Headers(init.headers).get('authorization'), 'Bearer device-test')
+  return Response.json({ runs: [] })
+} })
+assert.deepEqual(await device.listRuns({}), { runs: [] })
+assert.equal(agentDeliverableClaimSchema.safeParse({ sessionId: id, claimEpoch: 1 }).success, true)
+console.log(`Node ${process.versions.node}: built API and device clients, webhook verification and S2 iterator passed.`)

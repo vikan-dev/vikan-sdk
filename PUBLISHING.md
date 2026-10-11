@@ -12,7 +12,8 @@ plan is free; the organization name becomes the package scope.
 3. Authenticate locally with `bunx npm login`; `bun pm whoami` should identify
    the account. Complete npm's 2FA/browser authentication yourself. Do not put
    tokens or one-time passwords in source files or commits.
-4. Run `bun run check`, `bun run check:contract ../eztodo`, and
+4. Run `bun run check`, `bun run check:contract ../eztodo`,
+   `bun run check:agent ../eztodo`, and
    `bun pm pack --dry-run`. Verify the package contains built JS, declarations,
    README and license notices.
 5. Publish with `bun publish --access public`, then verify the registry version

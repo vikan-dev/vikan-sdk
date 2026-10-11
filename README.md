@@ -1,11 +1,20 @@
 # vikan SDK
 
-TypeScript SDK for the [vikan](https://vikan.dev) API, signed HTTP webhooks and S2 event subscriptions.
+TypeScript SDK for the [vikan](https://vikan.dev) API, paired devices, signed HTTP webhooks and S2 event subscriptions.
 ES modules for Node.js 22+ and Bun, with generated types and runtime validation.
 
 ## Install
 
-The first npm release is being prepared. Until it is published, build from source:
+The first npm release is being prepared. Bun applications can install directly
+from Git; replace `FULL_COMMIT_SHA` with the full revision you reviewed:
+
+```sh
+bun add '@vikan/sdk@github:vikan-dev/vikan-sdk#FULL_COMMIT_SHA'
+```
+
+Git consumers use the `bun` source export and included TypeScript types, so
+installation does not require lifecycle scripts or access to the main vikan
+repository. For Node.js, build and install a tarball:
 
 ```sh
 git clone https://github.com/vikan-dev/vikan-sdk.git
@@ -17,6 +26,48 @@ bun pm pack
 
 Install the resulting tarball in your application with `bun add /path/to/vikan-sdk-0.1.0.tgz`.
 After the npm release, use `bun add @vikan/sdk`.
+
+## Paired devices and CLI runners
+
+`@vikan/sdk/agent` is the protocol client used by the open-source
+[vikan CLI](https://github.com/vikan-dev/vikan-cli). Its authentication is a
+paired **device credential**, separate from the public API's workspace keys.
+The entry covers pairing request creation/claiming, bindings, runner sessions,
+run claims and context, commands, short-lived S2 grants, and deliverable uploads.
+Browser approval remains in vikan.
+
+```ts
+import { createVikanApiClient, apiFailure, AGENT_PROTOCOL_VERSION } from '@vikan/sdk/agent'
+
+const agent = createVikanApiClient({
+  apiOrigin: 'https://app.vikan.dev', // origin without /api
+  credential: savedDeviceCredential,
+})
+try {
+  const { runs } = await agent.listRuns({ bindingId })
+  console.log(AGENT_PROTOCOL_VERSION, runs)
+} catch (error) {
+  console.error(apiFailure(error))
+}
+```
+
+Omit `credential` while creating and claiming a pairing request. The caller
+creates and securely stores pairing/device secrets; only the hashes belong in
+`createLinkRequest`. This SDK does not execute commands or manage local state.
+The CLI supplies the Herdr/Codex integration and durable task recovery.
+
+Device calls accept injected `fetch` and `timeoutMs` (15 seconds by default),
+validate successful responses, and **never retry automatically**. `ApiCallError`
+classifies failures as `network`, `timeout`, `invalid-output`, or a validated
+`problem` with `code`, `status`, and `title`. A network failure or timeout leaves
+the result of a write unknown; reconcile state or repeat the same persisted
+operation rather than creating a new one. Multipart uploads use
+`uploadDeliverableFile(runId, metadata, file)`.
+
+The entry also exports the CLI's generated Zod schemas, protocol constants,
+stream-name helpers, and contextual deliverable parser. These preserve the
+server's refinements and recursive document validation. S2 transport, local
+configuration and process execution are caller responsibilities.
 
 ## API
 
@@ -198,15 +249,26 @@ bun install
 bun run check
 bun run sync:contract ../eztodo
 bun run check:contract ../eztodo
+bun run sync:agent ../eztodo
+bun run check:agent ../eztodo
 ```
 
 `src/generated/` contains an exported public subset of the main application's
-contract, with a source revision and content hash in `manifest.json`. The
+contract, with source revisions and content hashes in `manifest.json` and
+`agent-manifest.json`. The
 SDK builds without access to the application repository. Maintainers regenerate
 the snapshot when the API changes; CI runs against the committed snapshot.
 Routes, request/response types, custom validation and webhook signing come from
 that source. Update the source contract before regenerating; don't edit generated
 code. Changesets should update the SDK version and this documentation together.
+
+The agent export has an explicit allowlist in
+`packages/contract/src/sdk-agent-runtime.ts` and `sdk-agent-public.ts` in the
+application repository. The export removes router construction before bundling;
+the SDK receives selected HTTP metadata, public validator exports and their
+bundled protocol dependencies. Native
+Zod declarations are bundled from that same source with the TypeScript 5.9
+compiler API used by `dts-bundle-generator`.
 
 See [PUBLISHING.md](PUBLISHING.md) for npm organization setup and the first release.
 

@@ -1,26 +1,64 @@
 {
   "name": "@vikan/sdk",
   "version": "0.1.0",
-  "description": "TypeScript SDK for the vikan API, signed webhooks and resumable S2 events",
+  "description": "TypeScript SDK for the vikan API, paired agents, signed webhooks and resumable S2 events",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/vikan-dev/vikan-sdk.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vikan-dev/vikan-sdk.git"
+  },
   "homepage": "https://github.com/vikan-dev/vikan-sdk#readme",
-  "bugs": { "url": "https://github.com/vikan-dev/vikan-sdk/issues" },
-  "keywords": ["vikan", "sdk", "api", "typescript", "events"],
-  "engines": { "node": ">=22" },
+  "bugs": {
+    "url": "https://github.com/vikan-dev/vikan-sdk/issues"
+  },
+  "keywords": [
+    "vikan",
+    "sdk",
+    "api",
+    "typescript",
+    "events"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "packageManager": "bun@1.4.2",
   "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./webhooks": { "types": "./dist/webhooks.d.ts", "import": "./dist/webhooks.js" },
-    "./events": { "types": "./dist/events.d.ts", "import": "./dist/events.js" },
-    "./package.json": "./package.json"
+    ".": {
+      "types": "./src/index.ts",
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./webhooks": {
+      "types": "./src/webhooks.ts",
+      "bun": "./src/webhooks.ts",
+      "import": "./dist/webhooks.js"
+    },
+    "./events": {
+      "types": "./src/events.ts",
+      "bun": "./src/events.ts",
+      "import": "./dist/events.js"
+    },
+    "./package.json": "./package.json",
+    "./agent": {
+      "types": "./src/agent.ts",
+      "bun": "./src/agent.ts",
+      "import": "./dist/agent.js"
+    }
   },
-  "files": ["dist", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md"],
-  "publishConfig": { "access": "public" },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "bun scripts/build.ts",
     "typecheck": "tsc --noEmit",
@@ -28,8 +66,18 @@
     "check": "bun run typecheck && bun run test && bun run build",
     "sync:contract": "bun scripts/sync-contract.ts",
     "check:contract": "bun scripts/sync-contract.ts --check",
-    "prepack": "bun run build"
+    "prepack": "bun run build",
+    "sync:agent": "bun scripts/sync-agent.ts",
+    "check:agent": "bun scripts/sync-agent.ts --check"
   },
-  "dependencies": { "zod": "4.4.3", "@s2-dev/streamstore": "0.27.0" },
-  "devDependencies": { "@types/bun": "^1.4.0", "typescript": "^7.0.2", "json-schema-to-typescript": "^15.0.4" }
+  "dependencies": {
+    "zod": "4.4.3",
+    "@s2-dev/streamstore": "0.27.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0",
+    "dts-bundle-generator": "^9.5.1",
+    "json-schema-to-typescript": "^15.0.4",
+    "typescript": "5.9.3"
+  }
 }
