@@ -196,14 +196,16 @@ export function createVikanApiClient(options: VikanApiClientOptions): VikanApiCl
   const call = async <T>(operation: keyof typeof agentOperations, input: AgentRequestInput, schema: {
     safeParse(value: unknown): { success: true; data: T } | { success: false; error: unknown }
   }): Promise<T> => {
-    const response = await request(operation, input)
-    let raw: unknown
-    try { raw = await response.json() } catch (error) {
-      if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
-        throw new ApiCallError({ kind: 'timeout' })
-      }
-      throw new ApiCallError({ kind: 'invalid-output' })
+    let response: Response, text: string
+    try {
+      response = await request(operation, input)
+      text = await response.text()
+    } catch (error) {
+      throw error instanceof ApiCallError ? error : new ApiCallError(apiFailure(error))
     }
+    let raw: unknown
+    try { raw = JSON.parse(text) }
+    catch { throw new ApiCallError({ kind: 'invalid-output' }) }
     if (!response.ok) {
       const parsed = problemSchema.safeParse(raw)
       if (!parsed.success || parsed.data.status !== response.status) throw new ApiCallError({ kind: 'invalid-output' })
@@ -221,26 +223,7 @@ export function createVikanApiClient(options: VikanApiClientOptions): VikanApiCl
     revokeBinding: async (bindingId) => {
       await call('revokeBinding', { params: { bindingId }, body: {} }, agentBindingRevokedSchema)
     },
-    checkHealth: async () => {
-      let response: Response
-      try {
-        response = await request('checkHealth', {})
-      } catch (error) {
-        throw error instanceof ApiCallError ? error : new ApiCallError(apiFailure(error))
-      }
-      if (!response.ok) throw new ApiCallError({ kind: 'problem', code: 'http', status: response.status, title: `health check failed with HTTP ${response.status}` })
-      let body: unknown
-      try {
-        body = await response.json()
-      } catch {
-        throw new ApiCallError({ kind: 'invalid-output' })
-      }
-      try {
-        return parseApiOutput(healthSchema, body)
-      } catch {
-        throw new ApiCallError({ kind: 'invalid-output' })
-      }
-    },
+    checkHealth: () => call('checkHealth', {}, healthSchema),
 
     openRunnerSession: (input) => call('openRunnerSession', { body: input }, sessionOpenedSchema),
     heartbeatRunnerSession: (sessionId, input) =>

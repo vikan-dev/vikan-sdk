@@ -12,9 +12,10 @@ from Git; replace `FULL_COMMIT_SHA` with the full revision you reviewed:
 bun add '@vikan/sdk@github:vikan-dev/vikan-sdk#FULL_COMMIT_SHA'
 ```
 
-Git consumers use the `bun` source export and included TypeScript types, so
+Git consumers use the `bun` source export and committed `types/` declarations, so
 installation does not require lifecycle scripts or access to the main vikan
-repository. For Node.js, build and install a tarball:
+repository, and neither execution nor typechecking needs `dist/`. For Node.js,
+build and install a tarball:
 
 ```sh
 git clone https://github.com/vikan-dev/vikan-sdk.git
@@ -269,6 +270,12 @@ the SDK receives selected HTTP metadata, public validator exports and their
 bundled protocol dependencies. Native
 Zod declarations are bundled from that same source with the TypeScript 5.9
 compiler API used by `dts-bundle-generator`.
+
+All package type exports resolve to the committed `types/` declaration snapshot,
+so consumer compiler settings do not recheck the SDK's implementation sources.
+`bun run build` regenerates this snapshot using TypeScript and copies the generated
+runtime declarations from `src/generated/`. Commit `types/` with source changes;
+CI checks for snapshot drift after building. Do not edit declarations by hand.
 
 See [PUBLISHING.md](PUBLISHING.md) for npm organization setup and the first release.
 

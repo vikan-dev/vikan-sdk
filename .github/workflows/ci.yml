@@ -21,5 +21,9 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - name: Check committed declaration snapshot
+        run: |
+          git diff --exit-code -- types
+          test -z "$(git ls-files --others --exclude-standard -- types)"
       - run: node scripts/node-smoke.mjs
       - run: bun pm pack --dry-run --ignore-scripts

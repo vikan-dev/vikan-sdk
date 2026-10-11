@@ -25,26 +25,26 @@
   "packageManager": "bun@1.4.2",
   "sideEffects": false,
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./types/index.d.ts",
       "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./webhooks": {
-      "types": "./src/webhooks.ts",
+      "types": "./types/webhooks.d.ts",
       "bun": "./src/webhooks.ts",
       "import": "./dist/webhooks.js"
     },
     "./events": {
-      "types": "./src/events.ts",
+      "types": "./types/events.d.ts",
       "bun": "./src/events.ts",
       "import": "./dist/events.js"
     },
     "./package.json": "./package.json",
     "./agent": {
-      "types": "./src/agent.ts",
+      "types": "./types/agent.d.ts",
       "bun": "./src/agent.ts",
       "import": "./dist/agent.js"
     }
@@ -52,6 +52,7 @@
   "files": [
     "dist",
     "src",
+    "types",
     "README.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md"

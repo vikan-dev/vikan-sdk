@@ -60,6 +60,34 @@ test('ambiguous writes are not retried and timeouts retain their classification'
   expect(apiFailure(new ApiCallError({ kind: 'timeout' }))).toEqual({ kind: 'timeout' })
 })
 
+test('response body disconnects and timeouts remain transport failures', async () => {
+  for (const [error, kind] of [
+    [new TypeError('stream disconnected'), 'network'],
+    [new DOMException('body read timed out', 'TimeoutError'), 'timeout'],
+  ] as const) {
+    const api = createVikanApiClient({ apiOrigin: origin, fetch: async () => new Response(new ReadableStream({
+      start(controller) { controller.error(error) },
+    })) })
+    await expect(api.listBindings()).rejects.toMatchObject({ failure: { kind } })
+  }
+  const malformed = createVikanApiClient({ apiOrigin: origin, fetch: async () => new Response('{"broken":') })
+  await expect(malformed.listBindings()).rejects.toMatchObject({ failure: { kind: 'invalid-output' } })
+})
+
+test('health validates both success and problem responses', async () => {
+  const healthy = createVikanApiClient({ apiOrigin: origin, fetch: async () => Response.json({ status: 'ok', database: 'up' }) })
+  expect(await healthy.checkHealth()).toEqual({ status: 'ok', database: 'up' })
+  const proxy = createVikanApiClient({ apiOrigin: origin, fetch: async () => new Response('<html>unavailable</html>', { status: 503 }) })
+  await expect(proxy.checkHealth()).rejects.toMatchObject({ failure: { kind: 'invalid-output' } })
+})
+
+test('request construction failures use the classified API error boundary', async () => {
+  const api = createVikanApiClient({ apiOrigin: origin })
+  await expect(api.getRun('..')).rejects.toMatchObject({ name: 'ApiCallError', failure: { kind: 'network' } })
+  const malformed = createVikanApiClient({ apiOrigin: 'not an origin' })
+  await expect(malformed.listBindings()).rejects.toMatchObject({ name: 'ApiCallError', failure: { kind: 'network' } })
+})
+
 test('generated schemas keep refinements and stream protocol helpers', () => {
   expect(agentDeliverableClaimSchema.shape.claimEpoch.safeParse(0).success).toBe(false)
   expect(agentDeliverableClaimSchema.safeParse({ sessionId: id, claimEpoch: 1 }).success).toBe(true)
